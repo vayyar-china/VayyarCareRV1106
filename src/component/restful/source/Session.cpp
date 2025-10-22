@@ -1,11 +1,41 @@
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "Session.h"
 #include "Util.h"
 
 namespace sysmodule
 {
+
+    static int debug_callback(CURL* handle, curl_infotype type, char* data, size_t size, void* userptr)
+    {
+        // const char* text;
+        (void)handle;
+        (void)userptr;
+
+        switch (type)
+        {
+            case CURLINFO_TEXT:
+                std::cout << "[Info] " << data;
+                break;
+            case CURLINFO_HEADER_OUT:
+                std::cout << "[HEADER][OUT] " << data;
+                break;
+            case CURLINFO_HEADER_IN:
+                std::cout << "[HEADER][IN] " << data;
+                break;
+            case CURLINFO_DATA_IN:
+            case CURLINFO_DATA_OUT:
+            case CURLINFO_SSL_DATA_IN:
+            case CURLINFO_SSL_DATA_OUT:
+                return 0;
+            default:
+                return 0;
+        }
+        return 0;
+    }
+
     Session::Session()
     {
         // the global init should put in restful client
@@ -18,17 +48,25 @@ namespace sysmodule
         return (handler_ != nullptr);
     }
 
-    bool Session::InitWithSsl(const std::string& cert, const std::string& cabundle, const std::string& key)
+    bool Session::InitWithSsl(const std::string& cert, const std::string& cabundle, const std::string& key, bool debug_callback_on)
     {
         handler_ = curl_easy_init();
         if (!handler_) return false;
 
-        curl_easy_setopt(handler_, CURLOPT_SSLENGINE_DEFAULT, 1L);
-        curl_easy_setopt(handler_, CURLOPT_SSLCERT, cert.data());
-        curl_easy_setopt(handler_, CURLOPT_CAINFO, cabundle.data());
-        curl_easy_setopt(handler_, CURLOPT_SSLKEY, key.data());
-        curl_easy_setopt(handler_, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(handler_, CURLOPT_SSL_VERIFYHOST, 2L);
+        if (debug_callback_on)
+        {
+            curl_easy_setopt(handler_, CURLOPT_VERBOSE, 1L);
+            curl_easy_setopt(handler_, CURLOPT_DEBUGFUNCTION, debug_callback);
+        }
+
+        curl_easy_setopt(handler_, CURLOPT_SSLVERSION, CURL_SSLVERSION_MAX_TLSv1_2);
+        if (!cert.empty()) curl_easy_setopt(handler_, CURLOPT_SSLCERT, cert.data());
+        if (!cabundle.empty()) curl_easy_setopt(handler_, CURLOPT_CAINFO, cabundle.data());
+        if (!key.empty()) curl_easy_setopt(handler_, CURLOPT_SSLKEY, key.data());
+        curl_easy_setopt(handler_, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(handler_, CURLOPT_SSL_VERIFYHOST, 0L);
+        
+        curl_easy_setopt(handler_, CURLOPT_TIMEOUT_MS, 5000);
 
         return (CURLE_OK == curl_easy_perform(handler_));
     }

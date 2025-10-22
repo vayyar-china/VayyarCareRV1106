@@ -17,7 +17,7 @@ namespace sysmodule
         virtual void SetUrl(const std::string& url);
         virtual void SetBody(const std::string& body);
         virtual bool Init();
-        virtual bool InitWithSsl(const std::string& cert, const std::string& cabundle, const std::string& key);
+        virtual bool InitWithSsl(const std::string& cert, const std::string& cabundle, const std::string& key, bool debug_callback_on);
         virtual Response Get();
         virtual Response Post();
     private:
