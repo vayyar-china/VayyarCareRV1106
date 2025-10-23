@@ -15,8 +15,7 @@
 #include <thread>
 #include <atomic>
 
-#include <MQTTClient.h>
-
+#include <paho-mqtt/MQTTClient.h>
 #include <openssl/ssl.h>
 
 class MqttMessageDispatcher

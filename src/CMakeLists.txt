@@ -28,5 +28,6 @@ link_directories(
 add_subdirectory("component/restful")
 add_subdirectory("component/authorization")
 add_subdirectory("component/mqttclient")
+add_subdirectory("component/messagebus")
 
 add_subdirectory("app/registery")
