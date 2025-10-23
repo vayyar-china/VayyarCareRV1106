@@ -13,6 +13,7 @@ include_directories(
 set(DIR_SRCS
     source/main.cpp
     source/RestfulConnector.cpp
+    source/Device.cpp
 )
 
 set(TARGETNAME "registery")
@@ -25,8 +26,11 @@ target_link_libraries(
     curl
     ssl
     crypto
+    jsoncpp
+    paho-mqtt3cs
     libauthorization.so
     librestful.so
+    libmqttclient.so
 )
 
 add_custom_command (

@@ -32,5 +32,5 @@ add_custom_command (
     COMMAND rsync ARGS -a libmqttclient.so ${SETUP_ROOT}/lib
     COMMAND ${CMAKE_COMMAND} ARGS -E make_directory ${SETUP_ROOT}/include
     COMMAND rsync ARGS -a ${PROJECT_SOURCE_DIR}/include/ ${SETUP_ROOT}/include
-    COMMENT "copy generated restful component output to setup folder"
+    COMMENT "copy generated mqttclient component output to setup folder"
 )
