@@ -14,6 +14,8 @@ source ./env_install_toolchain.sh /path/to/VayyarCareRV1106/toolchain
 cmake ../src
 make clean
 make
-make install
 ```
-
+## Deploy
+1. Enter `Setup`folder
+2. copy libraries in `lib` to `/usr/lib` on target board
+3. copy executables in `bin` to `/oem` on target board
