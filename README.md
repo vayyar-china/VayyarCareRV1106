@@ -8,7 +8,11 @@ source ./env_install_toolchain.sh /path/to/VayyarCareRV1106/toolchain
 ```
 
 ## Build
-1. Enter `build` folder
+1. Enter `build` folder and clean `build` and `setup` folders
+```console
+rm -rf *
+rm -rf ../setup/*
+```
 2. Build project
 ```console
 cmake ../src

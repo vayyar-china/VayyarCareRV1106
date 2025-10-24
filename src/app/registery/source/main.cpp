@@ -1,6 +1,7 @@
 #include "RestfulConnector.h"
 #include "Auth.h"
 #include "Device.h"
+#include "MqttClientManager.h"
 #include "MqttClient.h"
 
 #include <iostream>
@@ -28,35 +29,33 @@ int main()
         return 0;
     }
 
-    MqttMessageDispatcher dispatcher;
-    AliyunMqttClient ali_client(device.get_device_registry().value().connection_details.product_key, // product_key, 
-                                device.get_device_registry().value().connection_details.device_name, // device_id, 
-                                device.get_device_registry().value().connection_details.device_secret, // "334f6508e309e328e6b326fee47965a5", 
-                                device.get_device_registry().value().connection_details.mqtt_host + ":" + std::to_string(device.get_device_registry().value().connection_details.mqtt_port)); // "mqtts://glxyXxAokhY.iot-as-mqtt.cn-shanghai.aliyuncs.com:1883");
+    std::string ali_shadow_sub_topic = "/shadow/get/" + device.get_device_registry().value().connection_details.product_key + "/" + device.get_device_registry().value().connection_details.device_name; //glxyXxAokhY/id_RTg6OUY6NkQ6RUY6RkQ6Qzg";
+    std::string ali_shadow_update_pub_topic = "/shadow/update/" + device.get_device_registry().value().connection_details.product_key + "/" + device.get_device_registry().value().connection_details.device_name; //glxyXxAokhY/id_RTg6OUY6NkQ6RUY6RkQ6Qzg";
+    std::string ali_publish_topic_prefix = "/" + device.get_device_registry().value().connection_details.product_key + "/" + device.get_device_registry().value().connection_details.device_name;
+    std::string ali_state_report_pub_topic = ali_publish_topic_prefix + "/user/state";
+    std::string ali_batch_update_pub_topic = ali_publish_topic_prefix + "/user/batch_update";
 
-    ali_client.set_message_dispatcher(&dispatcher);
+    std::vector<std::string> sub_topics;
+    sub_topics.push_back(ali_shadow_sub_topic);
 
-    // ali_client.set_message_callback([] (const std::string& topic, const std::string& payload) {
-    //     std::cout << "[Aliyun][Received][" << topic << "] message = " << payload << std::endl;
-    // });
-    
-    if (ali_client.connect())
+    MqttClientManager::instance().init(
+        device.get_device_registry().value().connection_details.product_key, // product_key, 
+        device.get_device_registry().value().connection_details.device_name, // device_id, 
+        device.get_device_registry().value().connection_details.device_secret, // "334f6508e309e328e6b326fee47965a5", 
+        device.get_device_registry().value().connection_details.mqtt_host + ":" + std::to_string(device.get_device_registry().value().connection_details.mqtt_port)
+    );
+
+    if (MqttClientManager::instance().connect())
     {
-        // std::string ali_shadow_sub_topic = "/shadow/get/glxyXxAokhY/id_RTg6OUY6NkQ6RUY6RkQ6Qzg";
-        // std::string ali_shadow_update_pub_topic = "/shadow/update/glxyXxAokhY/id_RTg6OUY6NkQ6RUY6RkQ6Qzg";
-        // ali_client.subscribe(ali_shadow_topic);
+        MqttClientManager::instance().register_task("shadow_config", sub_topics,
+            [](const MqttMessageDispatcher::MqttMessage& msg) { 
+                std::cout << "[Shadow task][Aliyun][Received][" << msg.topic << "] message = " << msg.payload << std::endl;
+            }
+        );
 
-        // std::cout << "Press enter to exit ..." << std::endl;
-        // std::cin.get();
+        MqttClientManager::instance().subscribe(ali_shadow_sub_topic);
 
-        MqttTask shadow_config_task("shadow_config", dispatcher);
-        shadow_config_task.add_message_handler(ali_client.ali_shadow_sub_topic, 
-            [](const MqttMessageDispatcher::MqttMessage& msg) { std::cout << "[Shadow task][Aliyun][Received][" << msg.topic << "] message = " << msg.payload << std::endl;});
-        
-        if (ali_client.subscribe(ali_client.ali_shadow_sub_topic))
-        {
-            ali_client.publish(ali_client.ali_shadow_update_pub_topic, "{method: \"get\"}");
-        }
+        MqttClientManager::instance().publish(ali_shadow_update_pub_topic, "{method: \"get\"}");
 
         while (true)
         {
@@ -64,9 +63,31 @@ int main()
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        shadow_config_task.stop();
-        ali_client.disconnect();
+        MqttClientManager::instance().disconnect();
     }
+
+
+    // if (ali_client.connect())
+    // {
+
+    //     MqttTask shadow_config_task("shadow_config", dispatcher);
+        // shadow_config_task.add_message_handler(ali_client.ali_shadow_sub_topic, 
+    //         [](const MqttMessageDispatcher::MqttMessage& msg) { std::cout << "[Shadow task][Aliyun][Received][" << msg.topic << "] message = " << msg.payload << std::endl;});
+        
+    //     if (ali_client.subscribe(ali_client.ali_shadow_sub_topic))
+    //     {
+    //         ali_client.publish(ali_client.ali_shadow_update_pub_topic, "{method: \"get\"}");
+    //     }
+
+    //     while (true)
+    //     {
+
+    //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    //     }
+
+    //     shadow_config_task.stop();
+    //     ali_client.disconnect();
+    // }
 
     return 0;
 }

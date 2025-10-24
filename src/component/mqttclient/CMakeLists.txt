@@ -13,6 +13,7 @@ include_directories(
 
 set(DIR_SRCS
     source/MqttClient.cpp
+    source/MqttClientManager.cpp
 )
 
 set(TARGETNAME "mqttclient")

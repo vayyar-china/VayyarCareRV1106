@@ -199,10 +199,10 @@ void MqttMessageDispatcher::stop()
     if (_dispatcher_thread.joinable()) _dispatcher_thread.join();
 }
 
-void MqttMessageDispatcher::register_task_queue(const std::string& task_name, MessageQueue* queue)
+void MqttMessageDispatcher::register_task_queue(const std::string& task_name, MessageQueue* queue, const std::vector<std::string>& topics)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    _task_queues[task_name] = queue;
+    _task_queues[task_name] = { queue, topics };
 }
 
 void MqttMessageDispatcher::unregister_task_queue(const std::string& task_name)
@@ -261,7 +261,7 @@ void MqttMessageDispatcher::dispatch_loop()
             _message_queue.pop();
         }
 
-        std::cout << "[MqttDispatcher] dispatcher topic callback to task queue" << std::endl;
+        std::cout << "[MqttDispatcher] dispatcher topic " << message.topic << " callback to task queue" << std::endl;
         // dispatch_to_topic_callbacks(message);
         dispatch_to_task_queues(message);
     }
@@ -283,14 +283,24 @@ void MqttMessageDispatcher::dispatch_to_topic_callbacks(const MqttMessage& messa
 void MqttMessageDispatcher::dispatch_to_task_queues(const MqttMessage& message)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    for (auto& [task_name, queue] : _task_queues)
+
+    std::cout << "[MQTTClient][Dispatcher] Dispatching message: " << message.topic << std::endl;
+
+    for (auto& [task_name, task_info] : _task_queues)
     {
-        if (queue) 
+        for (const auto& topic : task_info.topics)
         {
-            queue->push(message);
-            if (auto it = _notifiers.find(task_name); it != _notifiers.end())
+            if (is_topic_match(topic, message.topic))
             {
-                it->second();
+                std::cout << "[MQTTClient][Dispatcher] topic match: " << topic << " -> " << message.topic << std::endl;
+                std::cout << "[MQTTClient][Dispatcher] adding to queue for task : " << task_name << std::endl;
+
+                task_info.queue->push(message);
+                if (auto it = _notifiers.find(task_name); it != _notifiers.end())
+                {
+                    it->second();
+                }
+                break;
             }
         }
     }
@@ -328,10 +338,10 @@ std::vector<std::string> MqttMessageDispatcher::split(const std::string& str, ch
     return tokens;
 }
 
-MqttTask::MqttTask(const std::string& name, MqttMessageDispatcher& dispatcher)
+MqttTask::MqttTask(const std::string& name, MqttMessageDispatcher& dispatcher, const std::vector<std::string>& topics)
     : _name(name), _dispatcher(dispatcher), _running(true)
 {
-    _dispatcher.register_task_queue(_name, &_task_queue);
+    _dispatcher.register_task_queue(_name, &_task_queue, topics);
 
     _dispatcher.register_notifier(_name, [this] { _cv.notify_one(); });
 

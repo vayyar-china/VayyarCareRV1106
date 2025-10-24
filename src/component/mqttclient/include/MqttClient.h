@@ -34,7 +34,7 @@ public:
     ~MqttMessageDispatcher();
 
     void stop();
-    void register_task_queue(const std::string& task_name, MessageQueue* queue);
+    void register_task_queue(const std::string& task_name, MessageQueue* queue, const std::vector<std::string>& topics);
     void unregister_task_queue(const std::string& task_name);
     void register_topic_callback(const std::string& topic, MessageCallback callback);
     void unregister_topic_callback(const std::string& topic);
@@ -50,10 +50,16 @@ private:
 
     std::vector<std::string> split(const std::string& str, char delimiter);
 
+    struct TaskInfo
+    {
+        MessageQueue* queue;
+        std::vector<std::string> topics;
+    };
+
     std::mutex _mutex;
     std::condition_variable _cv;
     std::queue<MqttMessage> _message_queue;
-    std::map<std::string, MessageQueue*> _task_queues;
+    std::map<std::string, TaskInfo> _task_queues;
     std::map<std::string, MessageCallback> _topic_callbacks;
     std::map<std::string, std::function<void()>> _notifiers;
     std::thread _dispatcher_thread;
@@ -63,7 +69,7 @@ private:
 class MqttTask
 {
 public:
-    MqttTask(const std::string& name, MqttMessageDispatcher& dispatcher);
+    MqttTask(const std::string& name, MqttMessageDispatcher& dispatcher, const std::vector<std::string>& topics);
     ~MqttTask();
 
     void stop();
@@ -113,23 +119,25 @@ public:
     static int message_arrived(void* context, char* topic_name, int topic_len, MQTTClient_message* message)
     {
         AliyunMqttClient* client = static_cast<AliyunMqttClient*>(context);
-        if (client)
+
+        if (!client) 
         {
-            std::cout << "[Aliyun][MQTTClient][" << topic_name << "] message arrived" << std::endl;
-            std::string topic(topic_name, topic_len);
-            std::string payload(static_cast<char*>(message->payload), message->payloadlen);
+            MQTTClient_freeMessage(&message);
+            MQTTClient_free(topic_name);
+            return 1;
+        }
 
-            MqttMessageDispatcher::MqttMessage msg{topic, payload};
+        std::cout << "[Aliyun][MQTTClient][" << topic_name << "] message arrived topic length (" << topic_len << " bytes)" << " payload length (" << message->payloadlen << " bytes)" << std::endl;
+        // std::string topic(topic_name, topic_len);
+        std::string topic(topic_name);
+        std::string payload(static_cast<char*>(message->payload), message->payloadlen);
 
-            if (client->_dispatcher)
-            {
-                client->_dispatcher->add_message(msg);
-            }
+        MqttMessageDispatcher::MqttMessage msg{topic, payload};
 
-            // if (client->_message_callback)
-            // {
-            //     client->_message_callback(topic, payload);
-            // }
+        if (client->_dispatcher)
+        {
+            std::cout << "[MQTTClient][Dispatcher] adding message with topic " << msg.topic << " (" << msg.payload.size() << " bytes)" << std::endl;
+            client->_dispatcher->add_message(msg);
         }
 
         MQTTClient_freeMessage(&message);
