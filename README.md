@@ -23,3 +23,7 @@ make
 1. Enter `Setup`folder
 2. copy libraries in `lib` to `/usr/lib` on target board
 3. copy executables in `bin` to `/oem` on target board
+
+## Tips
+1. mkdir a folder named `ssl` in the same path as `registery`, and copy `/prebuilt/etc/openssl.cnf` to the folder
+2. mkdir a folder as the path `/etc/ssl/certs`, and copy `/prebuilt/etc/ca-certificates.crt` to the folder
