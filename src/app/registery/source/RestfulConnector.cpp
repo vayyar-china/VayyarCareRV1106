@@ -39,11 +39,11 @@ namespace sysmodule
         std::vector<std::string> headers;
         headers.push_back("keyver: 2");
         std::string bearer = "Bearer " + create_jwt((const uint8_t*)TOKEN, sizeof(TOKEN), "", project_id, device_id ,HTTP_REQ_JWT_EXPIRY);
-        std::cout << "[[Bearer]] is /n" << bearer << std::endl;
+        std::cout << "[[Bearer]] is \n" << bearer << std::endl;
         headers.push_back("Authorization: " + bearer);
         headers.push_back("Content-Type: application/json");
         session->SetHeaders(headers);
-        std::cout << "[[Request]] is /n" << body_payload << std::endl;
+        std::cout << "[[Request]] is \n" << body_payload << std::endl;
         session->SetBody(body_payload);
         return session->Post();
     }
