@@ -25,9 +25,11 @@ link_directories(
     "${SETUP_LIB_DIR}"
 )
 
-add_subdirectory("component/restful")
 add_subdirectory("component/authorization")
+add_subdirectory("component/restful")
 add_subdirectory("component/mqttclient")
-add_subdirectory("component/messagebus")
+# add_subdirectory("component/messagebus")
+add_subdirectory("component/messagebusmosq")
 
 add_subdirectory("app/registery")
+add_subdirectory("app/mqttadapter")
