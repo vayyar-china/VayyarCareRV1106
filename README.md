@@ -1,24 +1,24 @@
 # VayyarCareRV1106 HOW-TO
 
 ## Prerequisites
-
-In RV1106 SDK root path, enter the `tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf` folder and run 
-```console
-source ./env_install_toolchain.sh /path/to/VayyarCareRV1106/toolchain
-```
+1. tar -xzf ./toolchain.tar.gz
+2. cd toolchain/arm-rockchip830-linux-uclibcgnueabihf
+    source ./env_install_toolchain.sh /opt/toolchain/
+3. cd ../../
+    source ./env_setup.sh
 
 ## Build
-1. Enter `build` folder and clean `build` and `setup` folders
-```console
-rm -rf *
-rm -rf ../setup/*
-```
+1. cd VayyarCareRV1106-main
+   mkdir build
+   cd build
+   rm -rf *
+   rm -rf ../setup/*
+
 2. Build project
-```console
-cmake ../src
-make clean
-make
-```
+   cmake ../src
+   make clean
+   make
+
 ## Deploy
 1. Enter `Setup`folder
 2. copy libraries in `lib` to `/usr/lib` on target board

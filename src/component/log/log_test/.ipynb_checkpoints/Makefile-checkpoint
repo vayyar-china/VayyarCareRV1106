@@ -1,0 +1,17 @@
+
+all: test Json_write Test_sub Test_pub
+
+test: test.c log_client.h
+	CC test.c  -L/root/autodl-tmp/RV_log/Log_client -llogclient -o test
+    
+Json_write: Json_write.cpp
+	CXX -o Json_write  Json_write.cpp  -ljsoncpp
+    
+Test_sub: Test_sub.c
+	CC -o Test_sub  Test_sub.c  -lmosquitto
+    
+Test_pub: Test_pub.c
+	CC -o Test_pub  Test_pub.c  -lmosquitto
+    
+clean:
+	rm -f test Json_write Test_sub Test_pub

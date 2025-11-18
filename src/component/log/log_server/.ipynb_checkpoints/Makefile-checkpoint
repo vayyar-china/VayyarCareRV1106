@@ -1,0 +1,8 @@
+
+all: log_server  
+
+log_server: log_server.cpp
+	CXX -o log_server log_server.cpp -lrt -ljsoncpp -lmosquitto
+    
+clean:
+	rm -f log_server 
