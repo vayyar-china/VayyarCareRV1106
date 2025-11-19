@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include <mosquitto.h>
+#include <mosquitto/mosquitto.h>
 
 // 消息接收回调函数
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {

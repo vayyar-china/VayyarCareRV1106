@@ -1,0 +1,1 @@
+/opt/toolchain/arm-rockchip830-linux-uclibcgnueabihf/bin/arm-rockchip830-linux-uclibcgnueabihf-gcc  ./Test_sub.c -o test_sub.out -lmosquitto -lssl -lcrypto -ljsoncpp -lpaho-mqtt3cs -lauthorization -I /home/lchen/VayyarCareRV1106-main/prebuilt/include/ -L /home/lchen/VayyarCareRV1106-main/prebuilt/lib/ -L /home/lchen/VayyarCareRV1106-main/setup/lib/

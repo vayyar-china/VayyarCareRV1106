@@ -41,7 +41,7 @@ static struct {
 
 int load_config() {
     ifstream ifs;
-    ifs.open("Log.json");
+    ifs.open("/userdata/cfg/Log.json");
     
     if (!ifs.is_open()) {
         printf("can't open Log.json !\n");

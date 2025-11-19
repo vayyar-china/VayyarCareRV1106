@@ -8,7 +8,7 @@ extern "C" {
     
 #include <string.h>
 
-#define FIFO_NAME "/root/autodl-tmp/myfifo"
+#define FIFO_NAME "/tmp/myfifo"
 #define MODE 0666
 
 #define DEBUG

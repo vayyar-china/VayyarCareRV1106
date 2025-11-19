@@ -1,7 +1,7 @@
 {
-   "FIFO_NAME" : "/root/autodl-tmp/myfifo",
+   "FIFO_NAME" : "/tmp/myfifo",
    "IS_UPLOAD_TOCLOUD" : 1,
-   "LOG_PATH" : "/root/autodl-tmp/RV_log/Log_server/logfiles/",
+   "LOG_PATH" : "/tmp/logfiles/",
    "MAX_FILES" : 144,
    "TIME_RV_LOG_LOOP" : 6
 }
